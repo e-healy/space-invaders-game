@@ -42,6 +42,9 @@ let alienVelocityX = 1; // alien moving speed
 let bulletArray = [];
 let bulletVelocityY = -10; // bullet moving speed, -10 as it's moving up 
 
+let score = 0;
+let gameOver = false;
+
 window.onload = function() {
     board = document.getElementById("board");
     board.width = boardWidth;
@@ -67,6 +70,10 @@ window.onload = function() {
 function update() {
     requestAnimationFrame(update);
 
+    if (gameOver) {
+        return;
+    }
+
     context.clearRect(0, 0, board.width, board.height);
 
     // ship
@@ -89,6 +96,10 @@ function update() {
                 }
             }
             context.drawImage(alienImg, alien.x, alien.y, alien.width, alien.height);
+
+            if (alien.y >= ship.y) {
+                gameOver = true;
+            }
         }
     }
 
@@ -106,6 +117,7 @@ function update() {
                 bullet.used = true;
                 alien.alive = false;
                 alienCount--;
+                score += 100;
             }
         }
     }
@@ -115,9 +127,27 @@ function update() {
         bulletArray.shift(); // removes first element of the array
     }
 
+    // next level
+    if (alienCount == 0) {
+        //increase the number of aliens in columns and rows by 1
+        alienColumns = Math.min(alienColumns + 1, columns/2 -2) // cap will be at 16 rows / 2 -2 so 6 rows of aliens
+        alienRows = Math.min(alienRows + 1, rows-4); // cap at most 12 rows of aliens
+        alienVelocityX += 0.2; // increase alien movement speed for each level
+        alienArray = [];
+        bulletArray = [];
+        createAliens();
+    }
+
+    // Score
+    context.fillStyle = "white";
+    context.font = "16px courier";
+    context.fillText(score, 5, 20);
 };
 
 function moveShip(e) {
+    if (gameOver) {
+        return;
+    }
     if (e.code == "ArrowLeft" && ship.x - shipVelocityX >= 0) {
         ship.x -= shipVelocityX; // move left one tile
 
@@ -144,6 +174,9 @@ function createAliens() {
 }
 
 function shoot(e) {
+    if (gameOver) {
+        return;
+    }
     if (e.code == "Space") {
         //shoot
         let bullet = {
