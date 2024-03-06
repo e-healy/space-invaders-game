@@ -98,6 +98,16 @@ function update() {
         bullet.y += bulletVelocityY;
         context.fillStyle = "white";
         context.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+        // bullet collision with Aliens
+        for (let j = 0; j < alienArray.length; j++) {
+            let alien = alienArray[j];
+            if (!bullet.used && alien.alive && detectCollision(bullet, alien)) {
+                bullet.used = true;
+                alien.alive = false;
+                alienCount--;
+            }
+        }
     }
 
     //clear bullets 
@@ -134,7 +144,7 @@ function createAliens() {
 }
 
 function shoot(e) {
-    if (e.code = "Space") {
+    if (e.code == "Space") {
         //shoot
         let bullet = {
             x : ship.x + shipWidth * 15/32, // places bullet x position directly infornt of canon
@@ -145,5 +155,13 @@ function shoot(e) {
         }
         bulletArray.push(bullet);
     }
+}
+
+// condition for detecting collision between 2 objects  
+function detectCollision(a, b) {
+    return a.x < b.x + b.width &&       // a's top left corner doesnt reach b's top right corner
+            a.x + a.width > b.x &&      // a's top right corner passes b's top left corner
+            a.y < b.y + b.height &&     // a's top left corner doesn't reach b's bottom left corner
+            a.y + a.height > b.y;       // a's bottom left corner passes b's top left corner 
 
 }
